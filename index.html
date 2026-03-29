@@ -9,48 +9,118 @@
       font-family: Arial;
       text-align: center;
       padding: 20px;
+      background-color: #f5f5f5;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     video {
-      width: 600px;
+      width: 100%;
+      max-width: 1000px;
+      height: auto;
       margin-top: 20px;
+      border-radius: 10px;
     }
 
     button {
-      padding: 10px 20px;
+      padding: 12px 25px;
       font-size: 18px;
-      margin-top: 10px;
+      margin-top: 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 6px;
+    }
+
+    button:disabled {
+      background-color: gray;
+      cursor: not-allowed;
     }
 
     input {
       padding: 10px;
       font-size: 16px;
+      width: 250px;
     }
+
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+      color: green;
+    }
+
   </style>
 </head>
 
 <body>
 
-  <h1>Video Action Tracker</h1>
+  <div class="container">
 
-  <input id="username" placeholder="Enter your name" />
-  <br><br>
+    <h1>Video Action Tracker</h1>
 
-  <video id="video" controls>
-    <source src="Recording 2025-07-23 181655.mp4" type="video/mp4">
-  </video>
+    <input id="username" placeholder="Enter your name" />
+    <br><br>
 
-  <br>
+    <video id="video" controls>
+      <source src="Recording 2025-07-23 181655.mp4" type="video/mp4">
+    </video>
 
-  <button onclick="markEvent()">Mark Event</button>
+    <br>
 
-  <h2>Total Points: <span id="count">0</span></h2>
+    <button id="markButton" onclick="markEvent()">Mark Event</button>
+
+    <h2>Total Points: <span id="count">0</span></h2>
+
+    <p id="status">Video not playing</p>
+
+  </div>
 
   <script>
 
     let count = 0;
 
     const scriptURL = "https://script.google.com/macros/s/AKfycbxFbDq7GAjs37E7CwAn8YBktxlMlBx917X-_gK68-vDXbJn_Y77SVlNymLoc9vbb-aF0g/exec";
+
+    const video = document.getElementById("video");
+    const markButton = document.getElementById("markButton");
+    const status = document.getElementById("status");
+
+    // Disable button at start
+    markButton.disabled = true;
+
+    // Enable when video plays
+    video.addEventListener("play", () => {
+      markButton.disabled = false;
+      status.innerText = "Tracking Active";
+      status.style.color = "green";
+    });
+
+    // Disable when paused
+    video.addEventListener("pause", () => {
+      markButton.disabled = true;
+      status.innerText = "Video Paused - Tracking Disabled";
+      status.style.color = "red";
+    });
+
+    // Disable when video ends
+    video.addEventListener("ended", () => {
+      markButton.disabled = true;
+      status.innerText = "Video Finished - Tracking Disabled";
+      status.style.color = "red";
+      alert("Video finished. Tracking is now disabled.");
+    });
 
     function markEvent() {
 
@@ -61,7 +131,10 @@
         return;
       }
 
-      const video = document.getElementById("video");
+      if (video.paused || video.ended) {
+        alert("Video must be playing to track events.");
+        return;
+      }
 
       const time = video.currentTime.toFixed(2);
 
@@ -70,7 +143,6 @@
       document.getElementById("count").innerText = count;
 
       fetch(scriptURL, {
-
         method: "POST",
         body: JSON.stringify({
           user: username,
@@ -78,16 +150,21 @@
           date: new Date().toLocaleString(),
           video: "Training Video"
         })
-
-      });
-
+      })
+      .then(response => console.log("Saved"))
+      .catch(error => console.error("Error:", error));
     }
 
+    // Spacebar tracking
     document.addEventListener("keydown", function (e) {
 
       if (e.code === "Space") {
-        e.preventDefault();
-        markEvent();
+
+        if (!video.paused && !video.ended) {
+          e.preventDefault();
+          markEvent();
+        }
+
       }
 
     });
