@@ -81,14 +81,13 @@
 
     <button id="markButton" onclick="markEvent()">Mark Event</button>
 
-    <h2>Total Points: <span id="count">0</span></h2>
-
     <p id="status">Video not playing</p>
 
   </div>
 
   <script>
 
+    // points tracked silently
     let count = 0;
 
     const scriptURL = "https://script.google.com/macros/s/AKfycbxFbDq7GAjs37E7CwAn8YBktxlMlBx917X-_gK68-vDXbJn_Y77SVlNymLoc9vbb-aF0g/exec";
@@ -97,24 +96,24 @@
     const markButton = document.getElementById("markButton");
     const status = document.getElementById("status");
 
-    // Disable button at start
+    // disable button at start
     markButton.disabled = true;
 
-    // Enable when video plays
+    // enable when video plays
     video.addEventListener("play", () => {
       markButton.disabled = false;
       status.innerText = "Tracking Active";
       status.style.color = "green";
     });
 
-    // Disable when paused
+    // disable when paused
     video.addEventListener("pause", () => {
       markButton.disabled = true;
       status.innerText = "Video Paused - Tracking Disabled";
       status.style.color = "red";
     });
 
-    // Disable when video ends
+    // disable when video ends
     video.addEventListener("ended", () => {
       markButton.disabled = true;
       status.innerText = "Video Finished - Tracking Disabled";
@@ -136,11 +135,9 @@
         return;
       }
 
+      // track silently
       const time = video.currentTime.toFixed(2);
-
       count++;
-
-      document.getElementById("count").innerText = count;
 
       fetch(scriptURL, {
         method: "POST",
@@ -148,14 +145,15 @@
           user: username,
           time: time,
           date: new Date().toLocaleString(),
-          video: "Training Video"
+          video: "Training Video",
+          point: count
         })
       })
-      .then(response => console.log("Saved"))
+      .then(() => console.log("Event saved"))
       .catch(error => console.error("Error:", error));
     }
 
-    // Spacebar tracking
+    // spacebar tracking
     document.addEventListener("keydown", function (e) {
 
       if (e.code === "Space") {
