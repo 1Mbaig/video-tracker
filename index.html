@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Video Tracker</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding: 20px;
+    }
+
+    video {
+      width: 600px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    input {
+      padding: 10px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Video Action Tracker</h1>
+
+  <input id="username" placeholder="Enter your name" />
+  <br><br>
+
+  <video id="video" controls>
+    <source src="video.mp4" type="video/mp4">
+  </video>
+
+  <br>
+
+  <button onclick="markEvent()">Mark Event</button>
+
+  <h2>Total Points: <span id="count">0</span></h2>
+
+  <script>
+
+    let count = 0;
+
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxFbDq7GAjs37E7CwAn8YBktxlMlBx917X-_gK68-vDXbJn_Y77SVlNymLoc9vbb-aF0g/exec";
+
+    function markEvent() {
+
+      const username = document.getElementById("username").value;
+
+      if (!username) {
+        alert("Enter your name first");
+        return;
+      }
+
+      const video = document.getElementById("video");
+
+      const time = video.currentTime.toFixed(2);
+
+      count++;
+
+      document.getElementById("count").innerText = count;
+
+      fetch(scriptURL, {
+
+        method: "POST",
+        body: JSON.stringify({
+          user: username,
+          time: time,
+          date: new Date().toLocaleString(),
+          video: "Training Video"
+        })
+
+      });
+
+    }
+
+    document.addEventListener("keydown", function (e) {
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        markEvent();
+      }
+
+    });
+
+  </script>
+
+</body>
+
+</html>
